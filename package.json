@@ -6,7 +6,8 @@
     "start": "node bin/www",
     "dev": "./node_modules/.bin/nodemon bin/www",
     "prd": "pm2 start bin/www",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "sequelizeAuto": "sequelize-auto -h 127.0.0.1 -d zyf -u root -x root -p 3306 -t user —dialect mysql -o './models'"
   },
   "dependencies": {
     "debug": "^2.6.3",
