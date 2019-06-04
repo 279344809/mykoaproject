@@ -2,6 +2,8 @@ const router = require('koa-router')()
 
 const sqlServices = require('../dbcontrollers/mysqlconfig.js')
 
+const userctrl = require('../controllers/users')
+
 router.prefix('/zyf/users')
 
 // router.get('/', function (ctx, next) {
@@ -17,6 +19,7 @@ router.post('/getinfo', async function (ctx, next) {
   ctx.body = { code: 20000, data: dataList }
 })
 
+router.post('/search', userctrl.search)
 
 router.post('/login', async function (ctx, next) {
   // console.log('111111')
