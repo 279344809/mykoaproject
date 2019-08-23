@@ -1,78 +1,68 @@
 const userService = require('../services/users');
-
+var WXBizDataCrypt = require('../utils/WXBizDataCrypt')
+const axios = require('axios')
+const jwt = require('jsonwebtoken');
 class UsersController {
-    //注册
-    // static async add(ctx, next) {
-    //     let body = ctx.request.body;
-    //     console.log(body);
-    //     let a = await findUser({
-    //         mobile: body.mobile
-    //     }).then((data) => {
-    //         if (data.success) {
-    //             if (data.data.length > 0) {
-    //                 return true
-    //             } else {
-    //                 return false
-    //             }
-    //         }
-    //     }).catch(() => {
+    //auth.code2Session
+    async authcode(code) {
+        const appid = 'wx0ad35abe0567768f'
+        const secret = 'd651ac03645a922a1061288dd6f2ac3a'
+        let res = await axios.get(`https://api.weixin.qq.com/sns/jscode2session?appid=${appid}&secret=${secret}&js_code=${code}&grant_type=authorization_code`).then((res) => {
+            return res
+        })
+        return res
+    }
 
-    //     });
+    //微信登录
+    static async wxlogin(ctx, next) {
+        let data = ctx.request.body;
 
-    //     if (!body.mobile) {
-    //         ctx.body = {
-    //             success: false,
-    //             msg: '手机号不对'
-    //         }
-    //         return
-    //     }
-    //     if (a) {
-    //         ctx.body = {
-    //             success: false,
-    //             msg: '手机号已经存在'
-    //         }
-    //         return
-    //     }
-    //     if (!body.password) {
-    //         ctx.body = {
-    //             success: false,
-    //             msg: '密码不能为空'
-    //         }
-    //         return
-    //     }
-    //     await userService.create(body)
-    //         .then((data) => {
-    //             let r = '';
-    //             if (data.affectedRows != 0) {
-    //                 r = '添加成功';
-    //             }
-    //             ctx.body = {
-    //                 success: true,
-    //                 data: r
-    //             }
-    //         }).catch(() => {
-    //             ctx.body = {
-    //                 success: false,
-    //                 msg: 'err'
-    //             }
-    //         })
-    // }
-    //查询用户
-    static async search(ctx) {
-        let body = ctx.request.body;
-        let a = await findUser(body).then((data) => {
-            if (data.success) {
-                ctx.body = {
-                    success: true,
-                    data: data.data
-                }
-            }
-        }).catch(() => {
+        const appid = 'wx0ad35abe0567768f'
+        const secret = 'd651ac03645a922a1061288dd6f2ac3a'
+        let res = await axios.get(`https://api.weixin.qq.com/sns/jscode2session?appid=${appid}&secret=${secret}&js_code=${data.code}&grant_type=authorization_code`).then((res) => {
+            return res
+        })
+
+        // let authdata = await authcode(data.code)
+        const { openid, session_key } = res.data;
+        let a = await userService.search({
+            openid: openid
+        })
+        console.log('login查找数据')
+        console.log(a)
+        if (a) {
             ctx.body = {
-                success: false,
-                msg: 'err'
+                code: 20000,
+                data: a,
+                token: gettoken(a.userid)
             }
-        });
+            return;
+        } else {
+            console.log(session_key)
+            console.log(data.encryptedData)
+            console.log(data.iv)
+            const appid = 'wx0ad35abe0567768f'
+            var pc = new WXBizDataCrypt(appid, session_key)
+            var decryptData = pc.decryptData(data.encryptedData, data.iv)
+            console.log('解密后的数据：')
+            console.log(decryptData)
+            let add = await userService.add(
+                decryptData, openid
+            )
+            if (add) {
+                ctx.body = {
+                    code: 20000,
+                    data: add,
+                    token: gettoken(add.userid)
+                }
+                return;
+            }
+        }
+        ctx.body = {
+            code: 50000,
+            data: '微信登录失败，服务器错误！'
+        }
+        return;
     }
 
     //修改密码
@@ -186,6 +176,14 @@ class UsersController {
 
     // }
 };
+
+
+gettoken = function (userid) {
+    const token = jwt.sign({
+        userid: userid
+    }, 'my_token', { expiresIn: '24h' });
+    return token
+}
 
 findUser = async (params) => {
     let data = '';

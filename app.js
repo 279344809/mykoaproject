@@ -5,16 +5,18 @@ const json = require('koa-json')
 const onerror = require('koa-onerror')
 const bodyparser = require('koa-bodyparser')
 const logger = require('koa-logger')
+const koajwt = require('koa-jwt');
 
 const index = require('./routes/index')
 const users = require('./routes/users')
-
+const movies = require('./routes/movies')
+const code = require('./routes/code')
 // error handler
 onerror(app)
 
 // middlewares
 app.use(bodyparser({
-  enableTypes:['json', 'form', 'text']
+  enableTypes: ['json', 'form', 'text']
 }))
 app.use(json())
 app.use(logger())
@@ -32,9 +34,29 @@ app.use(async (ctx, next) => {
   console.log(`${ctx.method} ${ctx.url} - ${ms}ms`)
 })
 
+app.use((ctx, next) => {
+  return next().catch((err) => {
+    if (err.status === 401) {
+      ctx.status = 401;
+      ctx.body = { code: 50000, data: 'token无效，请检查账号登录状态！'}
+    } else {
+      throw err;
+    }
+  })
+})
+
+app.use(koajwt({
+  secret: 'my_token'
+}).unless({
+  path: [/\/user\/login/,/\/code\/getcode/,/\/users\/wxlogin/]
+}));
+
+
 // routes
 app.use(index.routes(), index.allowedMethods())
 app.use(users.routes(), users.allowedMethods())
+app.use(movies.routes(), movies.allowedMethods())
+app.use(code.routes(), code.allowedMethods())
 
 // error-handling
 app.on('error', (err, ctx) => {

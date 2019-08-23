@@ -10,6 +10,9 @@ var sequelize = new Sequelize(config.database, config.username, config.password,
         max: 5,
         min: 0,
         idle: 30000
+    },
+    define: {
+        timestamps: false
     }
 });
  
