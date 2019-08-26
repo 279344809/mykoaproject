@@ -16,7 +16,8 @@ class UsersController {
     //微信登录
     static async wxlogin(ctx, next) {
         let data = ctx.request.body;
-
+        console.log('微信登录')
+        console.log(data)
         const appid = 'wx0ad35abe0567768f'
         const secret = 'd651ac03645a922a1061288dd6f2ac3a'
         let res = await axios.get(`https://api.weixin.qq.com/sns/jscode2session?appid=${appid}&secret=${secret}&js_code=${data.code}&grant_type=authorization_code`).then((res) => {
@@ -34,7 +35,8 @@ class UsersController {
             ctx.body = {
                 code: 20000,
                 data: a,
-                token: gettoken(a.userid)
+                token: gettoken(a.userid),
+                expiresIn:Date.now()+72*60*60*1000
             }
             return;
         } else {
@@ -53,7 +55,8 @@ class UsersController {
                 ctx.body = {
                     code: 20000,
                     data: add,
-                    token: gettoken(add.userid)
+                    token: gettoken(add.userid),
+                    expiresIn:Date.now()+72*60*60*1000
                 }
                 return;
             }
@@ -181,7 +184,7 @@ class UsersController {
 gettoken = function (userid) {
     const token = jwt.sign({
         userid: userid
-    }, 'my_token', { expiresIn: '24h' });
+    }, 'my_token', { expiresIn: '72h' });
     return token
 }
 
