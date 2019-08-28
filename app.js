@@ -48,7 +48,7 @@ app.use((ctx, next) => {
 app.use(koajwt({
   secret: 'my_token'
 }).unless({
-  path: [/\/user\/login/,/\/code\/getcode/,/\/users\/wxlogin/]
+  path: [/\/users\/login/,/\/code\/getcode/,/\/users\/wxlogin/,/\/users\/register/]
 }));
 
 

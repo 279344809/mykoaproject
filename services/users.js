@@ -7,21 +7,33 @@ class Usersservices {
         var result = await usermodels.findOne({
             where: params
         });
-        return JSON.parse(JSON.stringify(result) ) 
+        return JSON.parse(JSON.stringify(result))
     }
 
-    static async add(data,openid) {
+    static async add(data, openid) {
         var result = await usermodels.create({
             avatar_url: data.avatarUrl,
-            openid:openid,
-            password:'666666',
-            nick_name:data.nickName,
-            gender:data.gender,
+            openid: openid,
+            password: '666666',
+            nick_name: data.nickName,
+            gender: data.gender,
             updated_at: Date.now(),
             created_at: Date.now(),
         });
-        return JSON.parse(JSON.stringify(result) ) 
+        return JSON.parse(JSON.stringify(result))
     }
+
+    static async commonadd(phonenumber, password) {
+        var result = await usermodels.create({
+            phonenumber: phonenumber,
+            password: password,
+            nick_name:phonenumber,
+            updated_at: Date.now(),
+            created_at: Date.now(),
+        });
+        return JSON.parse(JSON.stringify(result))
+    }
+    
     static async update(ctx, next) {
         let data = ctx.request.body;
         var result = await usermodels.update({
@@ -32,7 +44,7 @@ class Usersservices {
                     phonenumber: data.phonenumber
                 }
             });
-        return JSON.parse(JSON.stringify(result) ) 
+        return JSON.parse(JSON.stringify(result))
     }
 
 

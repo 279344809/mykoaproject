@@ -107,8 +107,8 @@ class CodeController {
     static async checkcode(ctx, next) {
         let body = ctx.request.body;
         console.log(body);
-        let a = await codeservices.findUser({
-            mobile: body.mobile
+        let a = await codeservices.search({
+            phonenumber: body.phonenumber
         }).then((data) => {
             if (data.success) {
                 if (data.data.length > 0) {

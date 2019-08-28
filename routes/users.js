@@ -24,54 +24,8 @@ router.prefix('/zyf/users')
 // router.post('/authcode', userctrl.authcode)
 router.post('/wxlogin', userctrl.wxlogin)
 
-router.post('/login', async function (ctx, next) {
-  // console.log('111111')
+router.post('/login', userctrl.login) 
 
-  let data = ctx.request.body;
-  // console.log(data)
-
-  let dataList = await sqlServices.findUserData(data.username)
-  if (dataList.length <= 0) {
-    ctx.body = { code: 50000, message: '用户不存在' }
-  } else {
-    if (dataList[0].password != data.password) {
-      ctx.body = { code: 50000, message: '密码错误' }
-    } else {
-      const token = jwt.sign({
-        name: data.username
-      }, 'my_token', { expiresIn: '24h' });
-      ctx.body = { code: 20000, data: dataList }
-    }
-  }
-
-  ctx.body = { code: 20000, data: doudata }
-
-})
-
-router.post('/comming', async function (ctx, next) {
-  // console.log('111111')
-
-  // let data = ctx.request.body;
-  // console.log(data)
-
-  // let dataList = await sqlServices.findUserData(data.username)
-  // if (dataList.length <= 0) {
-  //   ctx.body = { code: 50000, message: '用户不存在' }
-  // } else {
-  //   if (dataList[0].password != data.password) {
-  //     ctx.body = { code: 50000, message: '密码错误' }
-  //   } else {
-  //     ctx.body = { code: 20000, data: dataList }
-  //   }
-  // }
-
-
-  let doudata = await axios.get('http://api.douban.com/v2/movie/coming?apikey=0df993c66c0c636e29ecbb5344252a4a&start=0&count=6').then((response) => {
-    return response.data
-  })
-
-  ctx.body = { code: 20000, data: doudata }
-
-})
+router.post('/register', userctrl.register) 
 
 module.exports = router

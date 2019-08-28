@@ -1,8 +1,66 @@
 const userService = require('../services/users');
+const codeservices = require('../services/code');
 var WXBizDataCrypt = require('../utils/WXBizDataCrypt')
 const axios = require('axios')
 const jwt = require('jsonwebtoken');
 class UsersController {
+    //普通登录
+    static async login(ctx, next) {
+        const { phonenumber, password } = ctx.request.body;
+        let a = await userService.search({
+            phonenumber: phonenumber,
+            password: password
+        })
+        if (a) {
+            ctx.body = {
+                code: 20000,
+                data: a,
+                token: gettoken(a.userid),
+                expiresIn: Date.now() + 72 * 60 * 60 * 1000
+            }
+            return;
+        } else {
+            ctx.body = {
+                code: 50000,
+                data: '登录失败，用户名/密码不存在！'
+            }
+            return;
+        }
+    }
+    //普通注册
+    static async register(ctx, next) {
+        const { phonenumber, password, code } = ctx.request.body;
+        let a = await codeservices.search({
+            phonenumber: phonenumber
+        })
+        if (!a || a.code != code) {
+            ctx.body = {
+                code: 50000,
+                data: '验证码错误！'
+            }
+            return;
+        }
+        let add = await userService.commonadd(
+            phonenumber, password
+        )
+        if (add) {
+            ctx.body = {
+                code: 20000,
+                data: add,
+                token: gettoken(add.userid),
+                expiresIn: Date.now() + 72 * 60 * 60 * 1000
+            }
+            return;
+        } else {
+            ctx.body = {
+                code: 50000,
+                data: '注册失败！'
+            }
+            return;
+        }
+    }
+
+
     //auth.code2Session
     async authcode(code) {
         const appid = 'wx0ad35abe0567768f'
@@ -36,7 +94,7 @@ class UsersController {
                 code: 20000,
                 data: a,
                 token: gettoken(a.userid),
-                expiresIn:Date.now()+72*60*60*1000
+                expiresIn: Date.now() + 72 * 60 * 60 * 1000
             }
             return;
         } else {
@@ -56,7 +114,7 @@ class UsersController {
                     code: 20000,
                     data: add,
                     token: gettoken(add.userid),
-                    expiresIn:Date.now()+72*60*60*1000
+                    expiresIn: Date.now() + 72 * 60 * 60 * 1000
                 }
                 return;
             }
