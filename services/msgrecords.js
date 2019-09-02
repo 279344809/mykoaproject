@@ -29,7 +29,10 @@ class msgrecordsservices {
             msg: data.msg,
             type: data.type,
             nick_name: data.nick_name,
-            created_at: Date.now() + 10 * 60 * 1000
+            created_at: Date.now() + 10 * 60 * 1000,
+            roomid:0,
+            fromid:data.userid,
+            toid:0
         });
         return JSON.parse(JSON.stringify(result))
     }
